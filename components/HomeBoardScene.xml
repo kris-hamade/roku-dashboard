@@ -12,7 +12,7 @@
 
     <Label id="titleLabel" text="HomeBoard" translation="[56,34]" width="360" height="46" color="0xF3FAFFFF" font="font:MediumBoldSystemFont" />
     <Label id="timezoneLabel" text="America/Detroit" translation="[56,77]" width="470" height="32" color="0x9ED7FFFF" font="font:SmallSystemFont" />
-    <Label id="statusLabel" text="Loading dashboard..." translation="[792,44]" width="430" height="34" horizAlign="right" color="0xA7BBD0FF" font="font:SmallSystemFont" />
+    <Label id="statusLabel" text="Loading dashboard" translation="[792,44]" width="430" height="34" horizAlign="right" color="0xA7BBD0FF" font="font:SmallSystemFont" />
     <Label id="clockLabel" text="--:--" translation="[54,112]" width="430" height="86" color="0xFFFFFFFF" font="font:LargeBoldSystemFont" />
 
     <Group id="weatherCard" translation="[56,226]">
@@ -20,9 +20,10 @@
       <Rectangle translation="[0,0]" width="360" height="6" color="0x22D3EEFF" />
       <Label text="Weather" translation="[26,22]" width="230" height="32" color="0xA7D9FFFF" font="font:SmallBoldSystemFont" />
       <Poster id="weatherPoster" uri="pkg:/images/weather/moon-new.png" translation="[78,62]" width="164" height="164" />
-      <Label id="weatherMain" text="Data unavailable" translation="[26,210]" width="312" height="72" color="0xFFFFFFFF" font="font:MediumBoldSystemFont" wrap="true" />
-      <Label id="weatherSub" text="" translation="[26,282]" width="312" height="40" color="0xD7E7F5FF" font="font:SmallSystemFont" wrap="true" />
-      <Label id="weatherDetail" text="" translation="[26,326]" width="312" height="58" color="0x8AB7D6FF" font="font:SmallSystemFont" wrap="true" />
+      <Label id="weatherMain" text="Data unavailable" translation="[26,210]" width="312" height="50" color="0xFFFFFFFF" font="font:MediumBoldSystemFont" />
+      <Label id="weatherSub" text="" translation="[26,272]" width="312" height="32" color="0xD7E7F5FF" font="font:SmallSystemFont" />
+      <Label id="weatherDetail" text="" translation="[26,318]" width="312" height="30" color="0x8AB7D6FF" font="font:SmallSystemFont" />
+      <Label id="weatherMoon" text="" translation="[26,350]" width="312" height="30" color="0x8AB7D6FF" font="font:SmallSystemFont" />
     </Group>
 
     <Group id="f1Card" translation="[446,226]">
@@ -30,21 +31,25 @@
       <Rectangle translation="[0,0]" width="778" height="6" color="0xFF365EFF" />
       <Label text="Formula 1" translation="[28,22]" width="220" height="32" color="0xFFB2BFFF" font="font:SmallBoldSystemFont" />
       <Label id="f1Countdown" text="Data unavailable" translation="[28,58]" width="360" height="58" color="0xFFFFFFFF" font="font:MediumBoldSystemFont" />
-      <Label id="f1Race" text="" translation="[28,112]" width="398" height="58" color="0xFFD6DEFF" font="font:SmallBoldSystemFont" wrap="true" />
-      <Label id="f1Circuit" text="" translation="[28,172]" width="398" height="44" color="0xAEBCCBFF" font="font:SmallSystemFont" wrap="true" />
-      <Label id="f1After" text="" translation="[28,216]" width="398" height="50" color="0x78E1C7FF" font="font:SmallSystemFont" wrap="true" />
+      <Label id="f1RaceName" text="" translation="[28,112]" width="398" height="34" color="0xFFD6DEFF" font="font:SmallBoldSystemFont" />
+      <Label id="f1Session" text="" translation="[28,146]" width="398" height="30" color="0xFFD6DEFF" font="font:SmallSystemFont" />
+      <Label id="f1CircuitName" text="" translation="[28,184]" width="398" height="30" color="0xAEBCCBFF" font="font:SmallSystemFont" />
+      <Label id="f1Country" text="" translation="[28,214]" width="398" height="30" color="0xAEBCCBFF" font="font:SmallSystemFont" />
+      <Label id="f1AfterRace" text="" translation="[28,246]" width="398" height="28" color="0x78E1C7FF" font="font:SmallSystemFont" />
+      <Label id="f1AfterCountdown" text="" translation="[28,274]" width="398" height="28" color="0x78E1C7FF" font="font:SmallSystemFont" />
 
       <Group id="trackMap" translation="[454,30]">
         <Rectangle width="292" height="212" color="0x070B12AA" />
         <Poster id="circuitPoster" translation="[21,8]" width="250" height="141" />
-        <Label id="trackNameLabel" text="Track" translation="[10,149]" width="272" height="34" horizAlign="center" color="0xFFFFFFFF" font="font:SmallBoldSystemFont" wrap="true" />
-        <Label id="trackLabel" text="" translation="[10,180]" width="272" height="32" horizAlign="center" color="0xAEBCCBFF" font="font:SmallSystemFont" wrap="true" />
+        <Label id="trackNameLabel" text="Track" translation="[10,148]" width="272" height="28" horizAlign="center" color="0xFFFFFFFF" font="font:SmallBoldSystemFont" />
+        <Label id="trackLocationLabel" text="" translation="[10,176]" width="272" height="24" horizAlign="center" color="0xAEBCCBFF" font="font:SmallSystemFont" />
+        <Label id="trackStatsLabel" text="" translation="[10,198]" width="272" height="24" horizAlign="center" color="0xAEBCCBFF" font="font:SmallSystemFont" />
       </Group>
 
-      <Label id="qualiTitle" text="Qualifying Top 3" translation="[28,272]" width="300" height="30" color="0xFFB2BFFF" font="font:SmallBoldSystemFont" />
-      <Label id="quali1" text="Not posted yet" translation="[28,306]" width="690" height="28" color="0xFFFFFFFF" font="font:SmallSystemFont" wrap="true" />
-      <Label id="quali2" text="" translation="[28,334]" width="690" height="28" color="0xD6DFEAFF" font="font:SmallSystemFont" wrap="true" />
-      <Label id="quali3" text="" translation="[28,362]" width="690" height="28" color="0xD6DFEAFF" font="font:SmallSystemFont" wrap="true" />
+      <Label id="qualiTitle" text="Qualifying Top 3" translation="[28,304]" width="300" height="30" color="0xFFB2BFFF" font="font:SmallBoldSystemFont" />
+      <Label id="quali1" text="Not posted yet" translation="[28,336]" width="690" height="24" color="0xFFFFFFFF" font="font:SmallSystemFont" />
+      <Label id="quali2" text="" translation="[28,360]" width="690" height="24" color="0xD6DFEAFF" font="font:SmallSystemFont" />
+      <Label id="quali3" text="" translation="[28,382]" width="690" height="24" color="0xD6DFEAFF" font="font:SmallSystemFont" />
     </Group>
 
     <Group id="wowCard" translation="[56,638]">
@@ -54,8 +59,10 @@
         <Rectangle id="wowOrb" width="30" height="30" color="0xA855F7FF" />
         <Rectangle id="wowPulse" translation="[-6,-6]" width="42" height="42" color="0x38BDF8AA" opacity="0.35" />
       </Group>
-      <Label id="wowMain" text="World of Warcraft realm status unavailable" translation="[82,7]" width="540" height="44" color="0xFFFFFFFF" font="font:SmallBoldSystemFont" wrap="true" />
-      <Label id="wowSub" text="" translation="[650,7]" width="480" height="44" horizAlign="right" color="0xC7D7EAFF" font="font:SmallSystemFont" wrap="true" />
+      <Label id="wowRealm" text="World of Warcraft" translation="[82,7]" width="540" height="24" color="0xFFFFFFFF" font="font:SmallBoldSystemFont" />
+      <Label id="wowStatus" text="realm status unavailable" translation="[82,31]" width="540" height="22" color="0xFFFFFFFF" font="font:SmallSystemFont" />
+      <Label id="wowMeta" text="" translation="[650,7]" width="480" height="24" horizAlign="right" color="0xC7D7EAFF" font="font:SmallSystemFont" />
+      <Label id="wowIndex" text="" translation="[650,31]" width="480" height="22" horizAlign="right" color="0xC7D7EAFF" font="font:SmallSystemFont" />
     </Group>
 
     <Timer id="clockTimer" repeat="true" duration="1" />

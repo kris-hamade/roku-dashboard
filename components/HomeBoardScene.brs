@@ -8,21 +8,28 @@ sub init()
     m.weatherMain = m.top.findNode("weatherMain")
     m.weatherSub = m.top.findNode("weatherSub")
     m.weatherDetail = m.top.findNode("weatherDetail")
+    m.weatherMoon = m.top.findNode("weatherMoon")
     m.weatherPoster = m.top.findNode("weatherPoster")
 
     m.f1Countdown = m.top.findNode("f1Countdown")
-    m.f1Race = m.top.findNode("f1Race")
-    m.f1Circuit = m.top.findNode("f1Circuit")
-    m.f1After = m.top.findNode("f1After")
+    m.f1RaceName = m.top.findNode("f1RaceName")
+    m.f1Session = m.top.findNode("f1Session")
+    m.f1CircuitName = m.top.findNode("f1CircuitName")
+    m.f1Country = m.top.findNode("f1Country")
+    m.f1AfterRace = m.top.findNode("f1AfterRace")
+    m.f1AfterCountdown = m.top.findNode("f1AfterCountdown")
     m.trackNameLabel = m.top.findNode("trackNameLabel")
-    m.trackLabel = m.top.findNode("trackLabel")
+    m.trackLocationLabel = m.top.findNode("trackLocationLabel")
+    m.trackStatsLabel = m.top.findNode("trackStatsLabel")
     m.circuitPoster = m.top.findNode("circuitPoster")
     m.quali1 = m.top.findNode("quali1")
     m.quali2 = m.top.findNode("quali2")
     m.quali3 = m.top.findNode("quali3")
 
-    m.wowMain = m.top.findNode("wowMain")
-    m.wowSub = m.top.findNode("wowSub")
+    m.wowRealm = m.top.findNode("wowRealm")
+    m.wowStatus = m.top.findNode("wowStatus")
+    m.wowMeta = m.top.findNode("wowMeta")
+    m.wowIndex = m.top.findNode("wowIndex")
     m.wowOrb = m.top.findNode("wowOrb")
     m.wowPulse = m.top.findNode("wowPulse")
 
@@ -96,7 +103,7 @@ end sub
 sub fetchDashboard()
     if m.top.backendUrl = invalid or m.top.backendUrl = "" then return
 
-    m.statusLabel.text = "Updating..."
+    m.statusLabel.text = "Updating"
     m.dashboardTask.url = m.top.backendUrl
     m.dashboardTask.control = "RUN"
 end sub
@@ -131,8 +138,9 @@ sub renderWeather(weather as Dynamic)
 
     m.weatherSub.text = valueOrDash(weather.location)
     detail = "H " + valueOrDash(weather.highF) + Chr(176) + "  L " + valueOrDash(weather.lowF) + Chr(176)
+    m.weatherMoon.text = ""
     if weather.isDay <> invalid and weather.isDay = false and weather.moonPhase <> invalid then
-        detail = detail + Chr(10) + valueOrDash(weather.moonPhase.name) + " " + valueOrDash(weather.moonPhase.illumination) + "%"
+        m.weatherMoon.text = valueOrDash(weather.moonPhase.name) + " " + valueOrDash(weather.moonPhase.illumination) + "%"
     end if
     m.weatherDetail.text = detail
 
@@ -151,8 +159,10 @@ sub renderWow(wow as Dynamic)
         renderWowRealm()
     else
         m.wowRealms = []
-        m.wowMain.text = "World of Warcraft realm status unavailable"
-        m.wowSub.text = valueOrDash(wow.error)
+        m.wowRealm.text = "World of Warcraft"
+        m.wowStatus.text = "realm status unavailable"
+        m.wowMeta.text = valueOrDash(wow.error)
+        m.wowIndex.text = ""
     end if
 end sub
 
@@ -173,23 +183,29 @@ sub renderWowRealm()
         m.wowPulse.color = "0xF8717188"
     end if
 
-    m.wowMain.text = valueOrDash(realm.realm) + Chr(10) + UCase(status)
-    m.wowSub.text = region + "  Population: " + population + Chr(10) + (m.currentWowIndex + 1).ToStr() + "/" + m.wowRealms.count().ToStr()
+    m.wowRealm.text = valueOrDash(realm.realm)
+    m.wowStatus.text = UCase(status)
+    m.wowMeta.text = region + "  Population: " + population
+    m.wowIndex.text = (m.currentWowIndex + 1).ToStr() + "/" + m.wowRealms.count().ToStr()
 end sub
 
 sub renderF1(f1 as Dynamic)
     m.f1Countdown.text = valueOrDash(f1.countdown)
-    m.f1Race.text = valueOrDash(f1.nextRace) + Chr(10) + valueOrDash(f1.session)
-    m.f1Circuit.text = valueOrDash(f1.circuit) + Chr(10) + valueOrDash(f1.country)
+    m.f1RaceName.text = valueOrDash(f1.nextRace)
+    m.f1Session.text = valueOrDash(f1.session)
+    m.f1CircuitName.text = valueOrDash(f1.circuit)
+    m.f1Country.text = valueOrDash(f1.country)
 
     if f1.weekendAfter <> invalid then
-        m.f1After.text = "After that: " + valueOrDash(f1.weekendAfter.nextRace) + Chr(10) + "in " + valueOrDash(f1.weekendAfter.countdown)
+        m.f1AfterRace.text = "After that: " + valueOrDash(f1.weekendAfter.nextRace)
+        m.f1AfterCountdown.text = "in " + valueOrDash(f1.weekendAfter.countdown)
     else
-        m.f1After.text = ""
+        m.f1AfterRace.text = ""
+        m.f1AfterCountdown.text = ""
     end if
 
     m.trackNameLabel.text = valueOrDash(f1.circuit)
-    m.trackLabel.text = formatCircuitFacts(f1)
+    renderCircuitFacts(f1)
 
     if f1.circuitImage <> invalid and f1.circuitImage <> "" then
         m.circuitPoster.uri = f1.circuitImage
@@ -245,14 +261,21 @@ sub showUnavailable()
     m.weatherMain.text = "Data unavailable"
     m.weatherSub.text = ""
     m.weatherDetail.text = ""
-    m.wowMain.text = "World of Warcraft realm status unavailable"
-    m.wowSub.text = ""
+    m.weatherMoon.text = ""
+    m.wowRealm.text = "World of Warcraft"
+    m.wowStatus.text = "realm status unavailable"
+    m.wowMeta.text = ""
+    m.wowIndex.text = ""
     m.f1Countdown.text = "Data unavailable"
-    m.f1Race.text = ""
-    m.f1Circuit.text = ""
-    m.f1After.text = ""
+    m.f1RaceName.text = ""
+    m.f1Session.text = ""
+    m.f1CircuitName.text = ""
+    m.f1Country.text = ""
+    m.f1AfterRace.text = ""
+    m.f1AfterCountdown.text = ""
     m.trackNameLabel.text = ""
-    m.trackLabel.text = ""
+    m.trackLocationLabel.text = ""
+    m.trackStatsLabel.text = ""
     m.circuitPoster.uri = ""
 end sub
 
@@ -281,35 +304,30 @@ function valueOrDash(value as Dynamic) as String
     return value.ToStr()
 end function
 
-function formatCircuitFacts(f1 as Dynamic) as String
-    facts = ""
-
+sub renderCircuitFacts(f1 as Dynamic)
     if f1.circuitLocation <> invalid and f1.circuitLocation <> "" then
-        facts = f1.circuitLocation
+        m.trackLocationLabel.text = f1.circuitLocation
     else if f1.country <> invalid and f1.country <> "" then
-        facts = f1.country
+        m.trackLocationLabel.text = f1.country
+    else
+        m.trackLocationLabel.text = ""
     end if
 
+    stats = ""
     lengthValue = valueOrDash(f1.circuitLengthKm)
     if lengthValue <> "--" and lengthValue <> "null" then
-        lengthText = lengthValue + " km"
-        if facts <> "" then
-            facts = facts + Chr(10) + lengthText
-        else
-            facts = lengthText
-        end if
+        stats = lengthValue + " km"
     end if
 
     lapsValue = valueOrDash(f1.laps)
     if lapsValue <> "--" and lapsValue <> "null" then
         lapsText = lapsValue + " laps"
-        if facts <> "" then
-            facts = facts + "  " + Chr(183) + "  " + lapsText
+        if stats <> "" then
+            stats = stats + "  " + Chr(183) + "  " + lapsText
         else
-            facts = lapsText
+            stats = lapsText
         end if
     end if
 
-    if facts = "" then return "Circuit map"
-    return facts
-end function
+    m.trackStatsLabel.text = stats
+end sub
