@@ -1,0 +1,13 @@
+{
+  "name": "homeboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HomeBoard Roku screensaver with a small dashboard API backend.",
+  "scripts": {
+    "backend:install": "npm --prefix backend install",
+    "backend:dev": "npm --prefix backend run dev",
+    "backend:start": "npm --prefix backend start",
+    "zip": "make zip",
+    "deploy": "make deploy"
+  }
+}

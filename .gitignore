@@ -1,0 +1,6 @@
+backend/node_modules/
+build/
+.env
+backend/.env
+backend/homeboard.log
+.DS_Store

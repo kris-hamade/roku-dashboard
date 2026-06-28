@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="HomeBoardScene" extends="Scene">
+  <interface>
+    <field id="backendUrl" type="string" onChange="onBackendUrlChanged" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/HomeBoardScene.brs" />
+  <children>
+    <Poster id="backgroundA" uri="pkg:/images/backgrounds/mountain-lake.png" width="1280" height="720" opacity="1" />
+    <Poster id="backgroundB" uri="pkg:/images/backgrounds/city-night.png" width="1280" height="720" opacity="0" />
+    <Rectangle id="shade" width="1280" height="720" color="0x020810B8" />
+    <Rectangle id="topGlow" translation="[0,0]" width="1280" height="170" color="0x071A2ACC" />
+
+    <Label id="titleLabel" text="HomeBoard" translation="[56,34]" width="360" height="46" color="0xF3FAFFFF" font="font:MediumBoldSystemFont" />
+    <Label id="timezoneLabel" text="America/Detroit" translation="[56,77]" width="470" height="32" color="0x9ED7FFFF" font="font:SmallSystemFont" />
+    <Label id="statusLabel" text="Loading dashboard..." translation="[792,44]" width="430" height="34" horizAlign="right" color="0xA7BBD0FF" font="font:SmallSystemFont" />
+    <Label id="clockLabel" text="--:--" translation="[54,112]" width="430" height="86" color="0xFFFFFFFF" font="font:LargeBoldSystemFont" />
+
+    <Group id="weatherCard" translation="[56,226]">
+      <Rectangle width="360" height="402" color="0x0E1A26DD" />
+      <Rectangle translation="[0,0]" width="360" height="6" color="0x22D3EEFF" />
+      <Label text="Weather" translation="[26,22]" width="230" height="32" color="0xA7D9FFFF" font="font:SmallBoldSystemFont" />
+      <Poster id="weatherPoster" uri="pkg:/images/weather/moon-new.png" translation="[78,62]" width="164" height="164" />
+      <Label id="weatherMain" text="Data unavailable" translation="[26,210]" width="312" height="72" color="0xFFFFFFFF" font="font:MediumBoldSystemFont" wrap="true" />
+      <Label id="weatherSub" text="" translation="[26,282]" width="312" height="40" color="0xD7E7F5FF" font="font:SmallSystemFont" wrap="true" />
+      <Label id="weatherDetail" text="" translation="[26,326]" width="312" height="58" color="0x8AB7D6FF" font="font:SmallSystemFont" wrap="true" />
+    </Group>
+
+    <Group id="f1Card" translation="[446,226]">
+      <Rectangle width="778" height="402" color="0x111622E6" />
+      <Rectangle translation="[0,0]" width="778" height="6" color="0xFF365EFF" />
+      <Label text="Formula 1" translation="[28,22]" width="220" height="32" color="0xFFB2BFFF" font="font:SmallBoldSystemFont" />
+      <Label id="f1Countdown" text="Data unavailable" translation="[28,58]" width="360" height="58" color="0xFFFFFFFF" font="font:MediumBoldSystemFont" />
+      <Label id="f1Race" text="" translation="[28,112]" width="398" height="58" color="0xFFD6DEFF" font="font:SmallBoldSystemFont" wrap="true" />
+      <Label id="f1Circuit" text="" translation="[28,172]" width="398" height="44" color="0xAEBCCBFF" font="font:SmallSystemFont" wrap="true" />
+      <Label id="f1After" text="" translation="[28,216]" width="398" height="50" color="0x78E1C7FF" font="font:SmallSystemFont" wrap="true" />
+
+      <Group id="trackMap" translation="[454,30]">
+        <Rectangle width="292" height="212" color="0x070B12AA" />
+        <Poster id="circuitPoster" translation="[21,8]" width="250" height="141" />
+        <Label id="trackNameLabel" text="Track" translation="[10,149]" width="272" height="34" horizAlign="center" color="0xFFFFFFFF" font="font:SmallBoldSystemFont" wrap="true" />
+        <Label id="trackLabel" text="" translation="[10,180]" width="272" height="32" horizAlign="center" color="0xAEBCCBFF" font="font:SmallSystemFont" wrap="true" />
+      </Group>
+
+      <Label id="qualiTitle" text="Qualifying Top 3" translation="[28,272]" width="300" height="30" color="0xFFB2BFFF" font="font:SmallBoldSystemFont" />
+      <Label id="quali1" text="Not posted yet" translation="[28,306]" width="690" height="28" color="0xFFFFFFFF" font="font:SmallSystemFont" wrap="true" />
+      <Label id="quali2" text="" translation="[28,334]" width="690" height="28" color="0xD6DFEAFF" font="font:SmallSystemFont" wrap="true" />
+      <Label id="quali3" text="" translation="[28,362]" width="690" height="28" color="0xD6DFEAFF" font="font:SmallSystemFont" wrap="true" />
+    </Group>
+
+    <Group id="wowCard" translation="[56,638]">
+      <Rectangle width="1168" height="58" color="0x101826E6" />
+      <Rectangle width="7" height="58" color="0xA855F7FF" />
+      <Group id="wowIcon" translation="[28,14]">
+        <Rectangle id="wowOrb" width="30" height="30" color="0xA855F7FF" />
+        <Rectangle id="wowPulse" translation="[-6,-6]" width="42" height="42" color="0x38BDF8AA" opacity="0.35" />
+      </Group>
+      <Label id="wowMain" text="World of Warcraft realm status unavailable" translation="[82,7]" width="540" height="44" color="0xFFFFFFFF" font="font:SmallBoldSystemFont" wrap="true" />
+      <Label id="wowSub" text="" translation="[650,7]" width="480" height="44" horizAlign="right" color="0xC7D7EAFF" font="font:SmallSystemFont" wrap="true" />
+    </Group>
+
+    <Timer id="clockTimer" repeat="true" duration="1" />
+    <Timer id="pollTimer" repeat="true" duration="300" />
+    <Timer id="motionTimer" repeat="true" duration="1" />
+    <Timer id="wowTimer" repeat="true" duration="8" />
+    <Timer id="backgroundTimer" repeat="true" duration="35" />
+    <DashboardTask id="dashboardTask" />
+  </children>
+</component>
