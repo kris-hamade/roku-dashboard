@@ -20,8 +20,9 @@ HomeBoard is a Roku SceneGraph/BrightScript screensaver backed by a small Node.j
 │   └── HomeBoardScene.xml
 ├── images
 │   └── backgrounds
-│       ├── city-night.png
-│       └── mountain-lake.png
+│       ├── cityscape-01.png
+│       ├── cityscape-02.png through cityscape-09.png
+│       └── cityscape-10.png
 └── backend
     ├── .env.example
     ├── package.json
@@ -47,11 +48,11 @@ The API will run at:
 http://localhost:3000/api/dashboard
 ```
 
-For Roku hardware, `localhost` is the Roku device itself, not your computer. Set `BACKEND_URL` in `config.json` to your computer or server LAN address:
+For Roku hardware, `localhost` is the Roku device itself, not your computer. Set `BACKEND_URL` in `config.json` to your hosted backend or computer/server LAN address:
 
 ```json
 {
-  "BACKEND_URL": "http://192.168.1.25:3000/api/dashboard"
+  "BACKEND_URL": "https://rokudash.hamy.app/api/dashboard"
 }
 ```
 
@@ -61,6 +62,7 @@ Create `backend/.env` from `backend/.env.example`.
 
 ```sh
 PORT=3000
+PUBLIC_BASE_URL=https://rokudash.hamy.app
 TIMEZONE=America/Detroit
 WEATHER_LOCATION=White Lake, MI
 WEATHER_LATITUDE=42.6389
@@ -72,6 +74,7 @@ WOW_REGION=us
 WOW_REALM_SLUGS=illidan,misha,sargeras
 
 F1_SCHEDULE_FILE=./data/f1-2026.json
+NEWS_FEEDS=
 ```
 
 Weather uses Open-Meteo and latitude/longitude config. WoW uses Blizzard Battle.net OAuth client credentials. If `BLIZZARD_CLIENT_ID` and `BLIZZARD_CLIENT_SECRET` are missing, the API returns your configured realms with `status: "unavailable"` instead of fake online data.
@@ -80,17 +83,21 @@ The F1 schedule is intentionally lightweight: edit `backend/data/f1-2026.json` w
 
 Circuit images are proxied by the backend from Formula Timer. The Roku scene receives a backend URL such as `/assets/circuit/red_bull_ring.png`, keeping external image fetching out of the Roku app.
 
+News headlines come from RSS feeds and are cached by the backend for 10 minutes. Leave `NEWS_FEEDS` empty to use the defaults, or set a comma-separated list like `World=https://example.com/rss.xml,Tech=https://example.com/feed.xml`.
+
 ## Roku Screensaver
 
 This is a screensaver package, not just a normal channel. `source/main.brs` implements `RunScreenSaver()` and creates the SceneGraph scene in the screensaver BrightScript context. No channel state is required.
 
 The Roku UI:
 
-- Rotating dark scenic/cityscape backgrounds
+- Ten rotating dark cityscape backgrounds with subtle movement
 - Large local clock updated every second
 - Flat weather icons based on current conditions, including moon phase icons at night
-- F1 hero panel with countdown, next weekend hint, circuit name, real circuit image, and qualifying top three when present
+- Feature panel that alternates between F1 and top headlines every 30 seconds when news is available
+- F1 view with countdown, next weekend hint, circuit name, real circuit image, and qualifying top three when present
 - Rotating WoW realm row for Illidan, Misha, and Sargeras by default
+- Gentle foreground drift for burn-in protection
 - Backend polling every 5 minutes
 - Graceful “Data unavailable” state if the backend request fails
 
@@ -192,7 +199,7 @@ ghcr.io/OWNER/REPO/homeboard-backend:sha-...
     "country": "Austria",
     "circuit": "Red Bull Ring",
     "circuitSlug": "red_bull_ring",
-    "circuitImage": "http://192.168.1.55:3000/assets/circuit/red_bull_ring.png",
+    "circuitImage": "https://rokudash.hamy.app/assets/circuit/red_bull_ring.png",
     "trackType": "short alpine power circuit",
     "trackPoints": [[19, 60], [33, 35]],
     "qualifyingTop3": [
@@ -207,13 +214,22 @@ ghcr.io/OWNER/REPO/homeboard-backend:sha-...
       "nextRace": "British Grand Prix",
       "countdown": "7d 7h 17m"
     }
-  }
+  },
+  "news": [
+    {
+      "category": "Top",
+      "title": "Example headline",
+      "source": "NPR",
+      "publishedAt": "2026-06-28T07:00:00.000Z",
+      "url": "https://example.com/story"
+    }
+  ]
 }
 ```
 
 ## Troubleshooting
 
-- If Roku shows “Data unavailable”, open `http://YOUR_BACKEND_HOST:3000/api/dashboard` from another device on the same network.
+- If Roku shows “Data unavailable”, open `https://rokudash.hamy.app/api/dashboard` from another device on the same network.
 - Make sure your computer firewall allows inbound connections to the backend port.
 - Do not use `localhost` in `config.json` for a physical Roku.
 - If Blizzard credentials are absent, WoW realms will show `unavailable`. Add Battle.net API credentials to `backend/.env` and restart the backend for real realm status.

@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import { XMLParser } from 'fast-xml-parser';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -7,9 +8,12 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const circuitImageCache = new Map();
+const rssParser = new XMLParser({ ignoreAttributes: false });
+let newsCache = { expiresAt: 0, items: [] };
 
 const config = {
   port: Number(process.env.PORT || 3000),
+  publicBaseUrl: process.env.PUBLIC_BASE_URL || '',
   timezone: process.env.TIMEZONE || 'America/Detroit',
   weatherLocation: process.env.WEATHER_LOCATION || 'White Lake, MI',
   weatherLatitude: Number(process.env.WEATHER_LATITUDE || 42.6389),
@@ -18,8 +22,11 @@ const config = {
   blizzardClientSecret: process.env.BLIZZARD_CLIENT_SECRET || '',
   wowRegion: process.env.WOW_REGION || 'us',
   wowRealmSlugs: parseCsv(process.env.WOW_REALM_SLUGS || process.env.WOW_REALM_SLUG || 'illidan,misha,sargeras'),
-  f1ScheduleFile: process.env.F1_SCHEDULE_FILE || './data/f1-2026.json'
+  f1ScheduleFile: process.env.F1_SCHEDULE_FILE || './data/f1-2026.json',
+  newsFeeds: parseNewsFeeds(process.env.NEWS_FEEDS || '')
 };
+
+app.set('trust proxy', true);
 
 app.get('/health', (req, res) => {
   res.json({ ok: true });
@@ -27,12 +34,13 @@ app.get('/health', (req, res) => {
 
 app.get('/api/dashboard', async (req, res) => {
   const now = new Date();
-  const assetBaseUrl = `${req.protocol}://${req.get('host')}`;
+  const assetBaseUrl = config.publicBaseUrl || `${req.protocol}://${req.get('host')}`;
 
-  const [weather, wow, f1] = await Promise.all([
+  const [weather, wow, f1, news] = await Promise.all([
     getWeather().catch(error => fallbackWeather(error)),
     getWowStatuses().catch(error => fallbackWow(error)),
-    getNextF1Session(now, assetBaseUrl).catch(error => fallbackF1(error))
+    getNextF1Session(now, assetBaseUrl).catch(error => fallbackF1(error)),
+    getNewsHeadlines().catch(error => fallbackNews(error))
   ]);
 
   res.json({
@@ -43,7 +51,8 @@ app.get('/api/dashboard', async (req, res) => {
     },
     weather,
     wow,
-    f1
+    f1,
+    news
   });
 });
 
@@ -261,6 +270,51 @@ function fallbackF1(error) {
   };
 }
 
+async function getNewsHeadlines() {
+  if (newsCache.expiresAt > Date.now()) return newsCache.items;
+
+  const settled = await Promise.allSettled(config.newsFeeds.map(feed => fetchNewsFeed(feed)));
+  const items = settled
+    .filter(result => result.status === 'fulfilled')
+    .flatMap(result => result.value)
+    .sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0))
+    .filter((item, index, all) => all.findIndex(other => other.title === item.title) === index)
+    .slice(0, 12);
+
+  newsCache = {
+    expiresAt: Date.now() + 10 * 60 * 1000,
+    items
+  };
+
+  return items;
+}
+
+async function fetchNewsFeed(feed) {
+  const response = await fetch(feed.url, {
+    headers: {
+      Accept: 'application/rss+xml, application/xml, text/xml'
+    }
+  });
+  if (!response.ok) throw new Error(`${feed.label} news feed returned ${response.status}`);
+
+  const xml = await response.text();
+  const data = rssParser.parse(xml);
+  const rawItems = normalizeArray(data?.rss?.channel?.item || data?.feed?.entry);
+
+  return rawItems.slice(0, 8).map(item => ({
+    category: feed.label,
+    title: cleanText(textValue(item.title)),
+    source: cleanText(textValue(item.source) || textValue(item['dc:creator']) || textValue(item.author?.name) || feed.label),
+    publishedAt: normalizePublishedAt(item.pubDate || item.published || item.updated),
+    url: cleanText(linkValue(item.link))
+  })).filter(item => item.title);
+}
+
+function fallbackNews(error) {
+  console.warn('News unavailable:', error.message);
+  return [];
+}
+
 function formatTime(date) {
   return new Intl.DateTimeFormat('en-US', {
     timeZone: config.timezone,
@@ -404,4 +458,67 @@ function parseCsv(value) {
     .split(',')
     .map(item => item.trim())
     .filter(Boolean);
+}
+
+function parseNewsFeeds(value) {
+  if (!value) {
+    return [
+      { label: 'Top', url: 'https://feeds.npr.org/1001/rss.xml' },
+      { label: 'World', url: 'https://feeds.npr.org/1004/rss.xml' },
+      { label: 'U.S.', url: 'https://feeds.npr.org/1003/rss.xml' },
+      { label: 'Tech', url: 'https://www.theverge.com/rss/index.xml' }
+    ];
+  }
+
+  return value
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean)
+    .map(item => {
+      const separator = item.indexOf('=');
+      if (separator === -1) return { label: 'News', url: item };
+      return {
+        label: item.slice(0, separator).trim() || 'News',
+        url: item.slice(separator + 1).trim()
+      };
+    })
+    .filter(feed => feed.url);
+}
+
+function normalizeArray(value) {
+  if (value == null) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+function cleanText(value) {
+  if (!value) return '';
+  return value
+    .toString()
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function textValue(value) {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  return value['#text'] || value._text || value['@_href'] || '';
+}
+
+function linkValue(value) {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  const links = normalizeArray(value);
+  const alternate = links.find(link => !link['@_rel'] || link['@_rel'] === 'alternate');
+  return alternate?.['@_href'] || links[0]?.['@_href'] || '';
+}
+
+function normalizePublishedAt(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
 }

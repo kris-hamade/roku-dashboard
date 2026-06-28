@@ -1,16 +1,20 @@
 sub init()
     m.backgroundA = m.top.findNode("backgroundA")
     m.backgroundB = m.top.findNode("backgroundB")
+    m.titleLabel = m.top.findNode("titleLabel")
     m.statusLabel = m.top.findNode("statusLabel")
     m.clockLabel = m.top.findNode("clockLabel")
     m.timezoneLabel = m.top.findNode("timezoneLabel")
 
     m.weatherMain = m.top.findNode("weatherMain")
+    m.weatherCard = m.top.findNode("weatherCard")
     m.weatherSub = m.top.findNode("weatherSub")
     m.weatherDetail = m.top.findNode("weatherDetail")
     m.weatherMoon = m.top.findNode("weatherMoon")
     m.weatherPoster = m.top.findNode("weatherPoster")
 
+    m.featureTitle = m.top.findNode("featureTitle")
+    m.f1Card = m.top.findNode("f1Card")
     m.f1Countdown = m.top.findNode("f1Countdown")
     m.f1RaceName = m.top.findNode("f1RaceName")
     m.f1Session = m.top.findNode("f1Session")
@@ -21,12 +25,15 @@ sub init()
     m.trackNameLabel = m.top.findNode("trackNameLabel")
     m.trackLocationLabel = m.top.findNode("trackLocationLabel")
     m.trackStatsLabel = m.top.findNode("trackStatsLabel")
+    m.trackMap = m.top.findNode("trackMap")
     m.circuitPoster = m.top.findNode("circuitPoster")
+    m.qualiTitle = m.top.findNode("qualiTitle")
     m.quali1 = m.top.findNode("quali1")
     m.quali2 = m.top.findNode("quali2")
     m.quali3 = m.top.findNode("quali3")
 
     m.wowRealm = m.top.findNode("wowRealm")
+    m.wowCard = m.top.findNode("wowCard")
     m.wowStatus = m.top.findNode("wowStatus")
     m.wowMeta = m.top.findNode("wowMeta")
     m.wowIndex = m.top.findNode("wowIndex")
@@ -38,6 +45,7 @@ sub init()
     m.motionTimer = m.top.findNode("motionTimer")
     m.wowTimer = m.top.findNode("wowTimer")
     m.backgroundTimer = m.top.findNode("backgroundTimer")
+    m.featureTimer = m.top.findNode("featureTimer")
     m.dashboardTask = m.top.findNode("dashboardTask")
 
     m.clockTimer.observeField("fire", "onClockTick")
@@ -45,6 +53,7 @@ sub init()
     m.motionTimer.observeField("fire", "onMotionTick")
     m.wowTimer.observeField("fire", "onWowTick")
     m.backgroundTimer.observeField("fire", "onBackgroundTick")
+    m.featureTimer.observeField("fire", "onFeatureTick")
     m.dashboardTask.observeField("dashboard", "onDashboardLoaded")
     m.dashboardTask.observeField("error", "onDashboardError")
 
@@ -53,6 +62,24 @@ sub init()
     m.currentWowIndex = 0
     m.wowRealms = []
     m.backgroundIndex = 0
+    m.activeBackground = 0
+    m.featureMode = "f1"
+    m.currentF1 = invalid
+    m.newsItems = []
+    m.backgroundUris = [
+        "pkg:/images/backgrounds/cityscape-01.png",
+        "pkg:/images/backgrounds/cityscape-02.png",
+        "pkg:/images/backgrounds/cityscape-03.png",
+        "pkg:/images/backgrounds/cityscape-04.png",
+        "pkg:/images/backgrounds/cityscape-05.png",
+        "pkg:/images/backgrounds/cityscape-06.png",
+        "pkg:/images/backgrounds/cityscape-07.png",
+        "pkg:/images/backgrounds/cityscape-08.png",
+        "pkg:/images/backgrounds/cityscape-09.png",
+        "pkg:/images/backgrounds/cityscape-10.png"
+    ]
+    m.foregroundNodes = [m.titleLabel, m.timezoneLabel, m.statusLabel, m.clockLabel, m.weatherCard, m.f1Card, m.wowCard]
+    m.foregroundBase = [[56, 34], [56, 77], [792, 44], [54, 112], [56, 226], [446, 226], [56, 638]]
 
     onClockTick()
     m.clockTimer.control = "start"
@@ -60,6 +87,7 @@ sub init()
     m.motionTimer.control = "start"
     m.wowTimer.control = "start"
     m.backgroundTimer.control = "start"
+    m.featureTimer.control = "start"
 end sub
 
 sub onBackendUrlChanged()
@@ -78,6 +106,8 @@ end sub
 
 sub onMotionTick()
     m.motionFrame = m.motionFrame + 1
+    animateBurnInDrift()
+    animateBackgroundDrift()
     animateWeatherIcon()
     animateWowIcon()
 end sub
@@ -90,13 +120,29 @@ sub onWowTick()
 end sub
 
 sub onBackgroundTick()
-    m.backgroundIndex = (m.backgroundIndex + 1) mod 2
-    if m.backgroundIndex = 0 then
-        m.backgroundA.opacity = 1
-        m.backgroundB.opacity = 0
-    else
+    m.backgroundIndex = (m.backgroundIndex + 1) mod m.backgroundUris.count()
+
+    if m.activeBackground = 0 then
+        m.backgroundB.uri = m.backgroundUris[m.backgroundIndex]
         m.backgroundA.opacity = 0
         m.backgroundB.opacity = 1
+        m.activeBackground = 1
+    else
+        m.backgroundA.uri = m.backgroundUris[m.backgroundIndex]
+        m.backgroundA.opacity = 1
+        m.backgroundB.opacity = 0
+        m.activeBackground = 0
+    end if
+end sub
+
+sub onFeatureTick()
+    if m.newsItems <> invalid and m.newsItems.count() > 0 then
+        if m.featureMode = "f1" then
+            m.featureMode = "news"
+        else
+            m.featureMode = "f1"
+        end if
+        renderFeatureCard()
     end if
 end sub
 
@@ -121,9 +167,19 @@ sub onDashboardLoaded()
 
     if data.weather <> invalid then renderWeather(data.weather)
     if data.wow <> invalid then renderWow(data.wow)
-    if data.f1 <> invalid then renderF1(data.f1)
+    if data.f1 <> invalid then m.currentF1 = data.f1
+    if data.news <> invalid then m.newsItems = data.news
+    renderFeatureCard()
 
     m.statusLabel.text = "Updated " + formatLocalTime()
+end sub
+
+sub renderFeatureCard()
+    if m.featureMode = "news" and m.newsItems <> invalid and m.newsItems.count() > 0 then
+        renderNews()
+    else if m.currentF1 <> invalid then
+        renderF1(m.currentF1)
+    end if
 end sub
 
 sub renderWeather(weather as Dynamic)
@@ -190,6 +246,9 @@ sub renderWowRealm()
 end sub
 
 sub renderF1(f1 as Dynamic)
+    m.featureTitle.text = "Formula 1"
+    m.trackMap.visible = true
+    m.qualiTitle.text = "Qualifying Top 3"
     m.f1Countdown.text = valueOrDash(f1.countdown)
     m.f1RaceName.text = valueOrDash(f1.nextRace)
     m.f1Session.text = valueOrDash(f1.session)
@@ -213,6 +272,46 @@ sub renderF1(f1 as Dynamic)
         m.circuitPoster.uri = ""
     end if
     renderQualifying(f1.qualifyingTop3)
+end sub
+
+sub renderNews()
+    m.featureTitle.text = "Top Headlines"
+    m.trackMap.visible = false
+    m.circuitPoster.uri = ""
+    m.qualiTitle.text = "More Headlines"
+
+    clearFeatureText()
+    m.f1Countdown.text = "World / U.S. / Tech"
+
+    if m.newsItems.count() > 0 then
+        first = m.newsItems[0]
+        firstLines = splitTextIntoLines(valueOrDash(first.title), 43, 4)
+        if firstLines.count() > 0 then m.f1RaceName.text = firstLines[0]
+        if firstLines.count() > 1 then m.f1Session.text = firstLines[1]
+        if firstLines.count() > 2 then m.f1CircuitName.text = firstLines[2]
+        if firstLines.count() > 3 then m.f1Country.text = firstLines[3]
+    end if
+
+    if m.newsItems.count() > 1 then
+        item = m.newsItems[1]
+        m.f1AfterRace.text = newsPrefix(item) + firstLine(valueOrDash(item.title), 46)
+    end if
+
+    if m.newsItems.count() > 2 then
+        item = m.newsItems[2]
+        m.f1AfterCountdown.text = newsPrefix(item) + firstLine(valueOrDash(item.title), 46)
+    end if
+
+    labels = [m.quali1, m.quali2, m.quali3]
+    for i = 0 to 2
+        itemIndex = i + 3
+        if itemIndex < m.newsItems.count() then
+            item = m.newsItems[itemIndex]
+            labels[i].text = newsPrefix(item) + firstLine(valueOrDash(item.title), 68)
+        else
+            labels[i].text = ""
+        end if
+    end for
 end sub
 
 sub renderQualifying(top3 as Dynamic)
@@ -252,6 +351,26 @@ sub animateWowIcon()
     end if
 end sub
 
+sub animateBurnInDrift()
+    driftX = (Int(m.motionFrame / 47) mod 7) - 3
+    driftY = (Int(m.motionFrame / 61) mod 7) - 3
+
+    for i = 0 to m.foregroundNodes.count() - 1
+        base = m.foregroundBase[i]
+        m.foregroundNodes[i].translation = [base[0] + driftX, base[1] + driftY]
+    end for
+end sub
+
+sub animateBackgroundDrift()
+    panX = -24 + (Int(m.motionFrame / 5) mod 9)
+    panY = -16 + (Int(m.motionFrame / 7) mod 7)
+    if m.activeBackground = 0 then
+        m.backgroundA.translation = [panX, panY]
+    else
+        m.backgroundB.translation = [panX, panY]
+    end if
+end sub
+
 sub onDashboardError()
     showUnavailable()
 end sub
@@ -267,6 +386,7 @@ sub showUnavailable()
     m.wowMeta.text = ""
     m.wowIndex.text = ""
     m.f1Countdown.text = "Data unavailable"
+    m.featureTitle.text = "Formula 1"
     m.f1RaceName.text = ""
     m.f1Session.text = ""
     m.f1CircuitName.text = ""
@@ -302,6 +422,66 @@ function valueOrDash(value as Dynamic) as String
     valueType = type(value)
     if (valueType = "String" or valueType = "roString") and value = "" then return "--"
     return value.ToStr()
+end function
+
+sub clearFeatureText()
+    m.f1RaceName.text = ""
+    m.f1Session.text = ""
+    m.f1CircuitName.text = ""
+    m.f1Country.text = ""
+    m.f1AfterRace.text = ""
+    m.f1AfterCountdown.text = ""
+    m.trackNameLabel.text = ""
+    m.trackLocationLabel.text = ""
+    m.trackStatsLabel.text = ""
+    m.quali1.text = ""
+    m.quali2.text = ""
+    m.quali3.text = ""
+end sub
+
+function newsPrefix(item as Dynamic) as String
+    category = valueOrDash(item.category)
+    source = valueOrDash(item.source)
+
+    if source <> "--" then return source + ": "
+    if category <> "--" then return category + ": "
+    return ""
+end function
+
+function firstLine(text as String, maxChars as Integer) as String
+    lines = splitTextIntoLines(text, maxChars, 1)
+    if lines.count() = 0 then return ""
+    return lines[0]
+end function
+
+function splitTextIntoLines(text as String, maxChars as Integer, maxLines as Integer) as Object
+    words = text.Tokenize(" ")
+    lines = []
+    current = ""
+
+    for each word in words
+        if current = "" then
+            candidate = word
+        else
+            candidate = current + " " + word
+        end if
+
+        if Len(candidate) <= maxChars then
+            current = candidate
+        else
+            if current <> "" then
+                lines.Push(current)
+            end if
+            current = word
+            if lines.count() >= maxLines then return lines
+        end if
+    end for
+
+    if current <> "" and lines.count() < maxLines then
+        lines.Push(current)
+    end if
+
+    return lines
 end function
 
 sub renderCircuitFacts(f1 as Dynamic)

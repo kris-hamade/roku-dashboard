@@ -5,8 +5,8 @@
   </interface>
   <script type="text/brightscript" uri="pkg:/components/HomeBoardScene.brs" />
   <children>
-    <Poster id="backgroundA" uri="pkg:/images/backgrounds/mountain-lake.png" width="1280" height="720" opacity="1" />
-    <Poster id="backgroundB" uri="pkg:/images/backgrounds/city-night.png" width="1280" height="720" opacity="0" />
+    <Poster id="backgroundA" uri="pkg:/images/backgrounds/cityscape-01.png" translation="[-20,-12]" width="1320" height="744" opacity="1" />
+    <Poster id="backgroundB" uri="pkg:/images/backgrounds/cityscape-02.png" translation="[-20,-12]" width="1320" height="744" opacity="0" />
     <Rectangle id="shade" width="1280" height="720" color="0x020810B8" />
     <Rectangle id="topGlow" translation="[0,0]" width="1280" height="170" color="0x071A2ACC" />
 
@@ -29,7 +29,7 @@
     <Group id="f1Card" translation="[446,226]">
       <Rectangle width="778" height="402" color="0x111622E6" />
       <Rectangle translation="[0,0]" width="778" height="6" color="0xFF365EFF" />
-      <Label text="Formula 1" translation="[28,22]" width="220" height="32" color="0xFFB2BFFF" font="font:SmallBoldSystemFont" />
+      <Label id="featureTitle" text="Formula 1" translation="[28,22]" width="320" height="32" color="0xFFB2BFFF" font="font:SmallBoldSystemFont" />
       <Label id="f1Countdown" text="Data unavailable" translation="[28,58]" width="360" height="58" color="0xFFFFFFFF" font="font:MediumBoldSystemFont" />
       <Label id="f1RaceName" text="" translation="[28,112]" width="398" height="34" color="0xFFD6DEFF" font="font:SmallBoldSystemFont" />
       <Label id="f1Session" text="" translation="[28,146]" width="398" height="30" color="0xFFD6DEFF" font="font:SmallSystemFont" />
@@ -69,7 +69,8 @@
     <Timer id="pollTimer" repeat="true" duration="300" />
     <Timer id="motionTimer" repeat="true" duration="1" />
     <Timer id="wowTimer" repeat="true" duration="8" />
-    <Timer id="backgroundTimer" repeat="true" duration="35" />
+    <Timer id="backgroundTimer" repeat="true" duration="12" />
+    <Timer id="featureTimer" repeat="true" duration="30" />
     <DashboardTask id="dashboardTask" />
   </children>
 </component>
